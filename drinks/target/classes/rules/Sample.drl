@@ -1,0 +1,579 @@
+package com.sample
+
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
+
+declare Question
+    text : String
+    possibleAnswers : ArrayList
+    answer : String
+end
+
+declare userAnswer
+    value : String
+end
+
+
+// startowa reguła Who are you going with
+rule "start"
+	when
+	then
+		ArrayList<String> answers = new ArrayList<>();
+		answers.add("a group");
+		answers.add("your boss");
+		answers.add("a colleague");
+		answers.add("a client or business contact");
+    	insert(new Question("Who are you going out for drinks with?", answers, null));
+end
+
+rule "printing question"
+	when
+		question: Question(getAnswer() == null)
+    then
+    	printQuestion(question);    	
+		update(question);
+end
+
+rule "go with a group"
+	when 
+		Question(getText() == "Who are you going out for drinks with?", getAnswer() == "a group")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Is it an official function?", possibleAnswersList, null));
+end
+
+rule "official function YES"
+	when 
+		Question(getText() == "Is it an official function?", getAnswer() == "Yes")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("performance reward");
+		possibleAnswersList.add("holiday party");
+		possibleAnswersList.add("going-away party");
+		insert(new Question("It's a... ", possibleAnswersList, null));
+end
+
+rule "it's a PERFORMANCE REWARD"
+	when 
+		Question(getText() == "It's a... ", getAnswer() == "performance reward")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Is it a major celebration?", possibleAnswersList, null));
+end
+
+rule "major celebration YES or it's a HOLIDAY PARTY"
+	when 
+		Question(
+			(getText() == "Is it a major celebration?" && getAnswer() == "Yes") ||
+			(getText() == "It's a... " && getAnswer() == "holiday party")
+		)
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Can you comfortably get wasted?", possibleAnswersList, null));
+end
+
+rule "get wasted YES"
+	when 
+		Question(getText() == "Can you comfortably get wasted?", getAnswer() == "Yes")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Is it a Friday night?", possibleAnswersList, null));
+end
+
+rule "friday night YES or friday night NO and working here long NO or CLIENT OR BUSINESS take them to dinner after YES or he or she is crier YES or getting fired YES or good idea NO"
+	when 
+		Question(
+			(getText() == "Is it a Friday night?" && getAnswer() == "Yes") ||
+			(getText() == "Are you planning on working here for a long time?" && getAnswer() == "No") ||
+			(getText() == "Do you have to take them to dinner after?" && getAnswer() == "Yes")||
+			(getText() == "Is he or she a crier?" && getAnswer() == "Yes")||
+			(getText() == "Are you about to get fired?" && getAnswer() == "Yes")||
+			(getText() == "Are you sure this is a good idea?" && getAnswer() == "No")
+		)
+	then
+		showDrink("1. Martini");
+end
+
+rule "friday night NO"
+	when 
+		Question(getText() == "Is it a Friday night?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Are you planning on working here for a long time?", possibleAnswersList, null));
+end
+
+rule "working for a long time YES or GOING-AWAY PARTY like this person YES"
+	when 
+		Question(
+			(getText() == "Are you planning on working here for a long time?" && getAnswer() == "Yes") ||
+			(getText() == "Do you like this person?" && getAnswer() == "Yes")||
+			(getText() == "Are you celebrating something?" && getAnswer() == "Yes")
+		)
+	then
+		showDrink("4. Bubbly");
+end
+
+rule "get wasted NO or take them to dinner after NO or Mormon NO or can trust YES or person can help you YES or talk back NO or try sleep with you"
+	when 
+		Question(
+			(getText() == "Can you comfortably get wasted?" && getAnswer() == "No") ||
+			(getText() == "Do you have to take them to dinner after?" && getAnswer() == "No") ||
+			(getText() == "Are they Mormon?" && getAnswer() == "No")||
+			(getText() == "Can this person handle the truth?" && getAnswer() == "Yes")||
+			(getText() == "Can this person help you?" && getAnswer() == "Yes")||
+			(getText() == "Will you talk back?" && getAnswer() == "No")||
+			(getText() == "Is he or she trying to sleep with you?" && getAnswer() == "No")
+		)
+	then
+		showDrink("2. Wine");
+end
+
+rule "major celebration NO or obligated to keep up YES or bitchfest NO"
+	when 
+		Question(
+			(getText() == "Is it a major celebration?" && getAnswer() == "No") ||
+			(getText() == "Do you feel obligated to keep up with this person?" && getAnswer() == "Yes")||
+			(getText() == "Will this morph into a bitchfest?" && getAnswer() == "No")
+		)
+	then
+		showDrink("6. Highball");
+end
+
+rule "official function NO"
+	when 
+		Question(getText() == "Is it an official function?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Eh");
+		possibleAnswersList.add("No");
+		insert(new Question("Do you like these people?", possibleAnswersList, null));
+end
+
+rule "like people NO or CLIENT OR BUSINESS expense account big NO or obligated to keep up NO or girls night YES or good idea YES"
+	when 
+		Question(
+			(getText() == "Do you like these people?" && getAnswer() == "No") ||
+			(getText() == "Is your expense account big?" && getAnswer() == "No") ||
+			(getText() == "Do you feel obligated to keep up with this person?" && getAnswer() == "No") ||
+			(getText() == "Is he or she a crier?" && getAnswer() == "No") ||
+			(getText() == "Is this a girls' night?" && getAnswer() == "Yes") ||
+			(getText() == "Are you sure this is a good idea?" && getAnswer() == "Yes")
+		)
+	then
+		showDrink("5. Fancy cocktail");
+end
+
+
+rule "like people EH"
+	when 
+		Question(getText() == "Do you like these people?", getAnswer() == "Eh")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Can you write this off?", possibleAnswersList, null));
+end
+
+rule "write off YES or performance NO"
+	when 
+		Question(
+			(getText() == "Can you write this off?" && getAnswer() == "Yes")||
+			(getText() == "Is this a performance warning?" && getAnswer() == "No")||
+			(getText() == "Is your companion male?" && getAnswer() == "Yes")
+		)
+	then
+		showDrink("7. Lowball");
+end
+
+rule "write off NO or bitchfest YES or work drinks NO or girls night NO"
+	when 
+		Question(
+			(getText() == "Can you write this off?" && getAnswer() == "No") ||
+			(getText() == "Will this morph into a bitchfest?" && getAnswer() == "Yes") ||
+			(getText() == "Can this be expensed as work drinks?" && getAnswer() == "No") ||
+			(getText() == "Is this a girls' night?" && getAnswer() == "No")
+		)
+			
+	then
+		showDrink("3. Beer");
+end
+
+rule "it's a GOING-AWAY PARTY"
+	when 
+		Question(getText() == "It's a... ", getAnswer() == "going-away party")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Do you like this person?", possibleAnswersList, null));
+end
+
+rule "like this person NO or trying to close a deal NO"
+	when 
+		Question(
+			(getText() == "Do you like this person?" && getAnswer() == "No") ||
+			(getText() == "Why? Are you trying to close a deal?" && getAnswer() == "No")
+		)
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Are you schmoozing to stay on this person's radar?", possibleAnswersList, null));
+end
+
+rule "schmoozing NO"
+	when 
+		Question(getText() == "Are you schmoozing to stay on this person's radar?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Do you have a life?", possibleAnswersList, null));
+end
+
+rule "do you have a life? NO and YES"
+	when 
+		Question(
+			(getText() == "Do you have a life?" && getAnswer() == "No") ||
+			(getText() == "You aren't being honest. Try again and..." && getAnswer() == "->")
+		)
+	then
+		showDrink("GET A LIFE!");
+end
+
+rule "you aren't honest"
+	when 
+		Question(getText() == "Do you have a life?", getAnswer() == "Yes")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("->");
+		insert(new Question("You aren't being honest. Try again and...", possibleAnswersList, null));
+end
+
+
+// 2 - client or business contact
+			
+rule "Going out with a client or business contact"
+        when
+            Question(getText() == "Who are you going out for drinks with?", getAnswer() == "a client or business contact")
+        then
+            ArrayList<String> possibleAnswersList = new ArrayList<>();
+            possibleAnswersList.add("Yes");
+            possibleAnswersList.add("No");
+            insert(new Question("Why? Are you trying to close a deal?", possibleAnswersList, null));
+end
+
+rule "Trying to close a deal YES"
+        when
+            Question(getText() == "Why? Are you trying to close a deal?", getAnswer() == "Yes")
+        then
+            ArrayList<String> possibleAnswersList = new ArrayList<>();
+            possibleAnswersList.add("Yes");
+            possibleAnswersList.add("No");
+            insert(new Question("Is your expense account big?", possibleAnswersList, null));
+end
+
+rule "Expense account big YES"
+        when
+            Question(getText() == "Is your expense account big?", getAnswer() == "Yes")
+        then
+            ArrayList<String> possibleAnswersList = new ArrayList<>();
+            possibleAnswersList.add("Yes");
+            possibleAnswersList.add("No");
+            insert(new Question("Do you have to take them to dinner after?", possibleAnswersList, null));
+end
+
+
+
+rule "stay on person's radar YES"
+        when
+            Question(getText() == "Are you schmoozing to stay on this person's radar?", getAnswer() == "Yes")
+        then
+            ArrayList<String> possibleAnswersList = new ArrayList<>();
+            possibleAnswersList.add("Yes");
+            possibleAnswersList.add("No");
+            insert(new Question("Is he or she a big drinker?", possibleAnswersList, null));
+end
+
+
+rule "big drinker YES"
+        when
+            Question(getText() == "Is he or she a big drinker?", getAnswer() == "Yes")
+        then
+            ArrayList<String> possibleAnswersList = new ArrayList<>();
+            possibleAnswersList.add("Yes");
+            possibleAnswersList.add("No");
+            insert(new Question("Do you feel obligated to keep up with this person?", possibleAnswersList, null));
+end
+
+
+rule "big drinker NO"
+        when
+            Question(getText() == "Is he or she a big drinker?", getAnswer() == "No")
+        then
+            ArrayList<String> possibleAnswersList = new ArrayList<>();
+            possibleAnswersList.add("Yes");
+            possibleAnswersList.add("No");
+            insert(new Question("Are they Mormon?", possibleAnswersList, null));
+end
+
+rule "Mormon YES or talk back YES or try sleep with you YES"
+        when
+            Question(
+            	(getText() == "Are they Mormon?" && getAnswer() == "Yes")||
+            	(getText() == "Will you talk back?" && getAnswer() == "Yes")||
+            	(getText() == "Is he or she trying to sleep with you?" && getAnswer() == "Yes")
+            )
+        then
+            showDrink("8. Non-alcoholic");
+end
+
+//3 a colleague
+rule "go with a colleague"
+	when 
+		Question(getText() == "Who are you going out for drinks with?", getAnswer() == "a colleague")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("To gripe about work");
+		possibleAnswersList.add("To ask for advice");
+		possibleAnswersList.add("To give advice");
+		insert(new Question("Why?", possibleAnswersList, null));
+end
+
+rule "giving advice"
+	when 
+		Question(getText() == "Why?", getAnswer() == "To give advice")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Did he or she invite you out?", possibleAnswersList, null));
+end
+
+rule "did he or she invite us YES"
+	when 
+		Question(getText() == "Did he or she invite you out?", getAnswer() == "Yes")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Can this person handle the truth?", possibleAnswersList, null));
+end
+
+rule "Can we trust him NO or is this performance YES"
+	when 
+		Question(
+			(getText() == "Can this person handle the truth?" && getAnswer() == "No")||
+			(getText() == "Is this a performance warning?" && getAnswer() == "Yes")
+		)
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Is he or she a crier?", possibleAnswersList, null));
+end
+
+rule "did he or she invite us NO"
+	when 
+		Question(getText() == "Did he or she invite you out?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Is this a performance warning?", possibleAnswersList, null));
+end
+
+rule "asking for advice"
+	when 
+		Question(getText() == "Why?", getAnswer() == "To ask for advice")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Are you about to get fired?", possibleAnswersList, null));
+end
+
+rule "getting fired NO"
+	when 
+		Question(getText() == "Are you about to get fired?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Just scheming for a promotion?", possibleAnswersList, null));
+end
+
+rule "scheming for a promotion NO or person can help you NO"
+	when 
+		Question(
+			(getText() == "Just scheming for a promotion?" && getAnswer() == "No")||
+			(getText() == "Can this person help you?" && getAnswer() == "No")
+		)
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Will this morph into a bitchfest?", possibleAnswersList, null));
+end
+
+rule "scheming for a promotion YES"
+	when 
+		Question(getText() == "Just scheming for a promotion?", getAnswer() == "Yes")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Can this person help you?", possibleAnswersList, null));
+end
+
+rule "to gripe about work"
+	when 
+		Question(getText() == "Why?", getAnswer() == "To gripe about work")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Can this be expensed as work drinks?", possibleAnswersList, null));
+end
+
+rule "work drinks YES"
+	when 
+		Question(getText() == "Can this be expensed as work drinks?", getAnswer() == "Yes")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Is your companion male?", possibleAnswersList, null));
+end
+
+rule "companion male NO"
+	when 
+		Question(getText() == "Is your companion male?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Is this a girls' night?", possibleAnswersList, null));
+end
+
+//4 your boss
+rule "go with a boss"
+	when 
+		Question(getText() == "Who are you going out for drinks with?", getAnswer() == "your boss")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Did he or she ask you to drinks?", possibleAnswersList, null));
+end
+
+rule "you are invited YES"
+	when 
+		Question(getText() == "Did he or she ask you to drinks?", getAnswer() == "Yes")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Are you celebrating something?", possibleAnswersList, null));
+end
+
+rule "celebrating something NO"
+	when 
+		Question(getText() == "Are you celebrating something?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Are you worried you're in trouble?", possibleAnswersList, null));
+end
+
+rule "you are in trouble YES"
+	when 
+		Question(getText() == "Are you worried you're in trouble?", getAnswer() == "Yes")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Will you talk back?", possibleAnswersList, null));
+end
+
+rule "you are in trouble NO or trying seduce boss NO"
+	when 
+		Question(
+			(getText() == "Are you worried you're in trouble?" && getAnswer() == "No")||
+			(getText() == "Are you trying to seduce your boss?" && getAnswer() == "No")
+		)
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Is he or she trying to sleep with you?", possibleAnswersList, null));
+end
+
+rule "you are invited NO"
+	when 
+		Question(getText() == "Did he or she ask you to drinks?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Are you asking for a raise?", possibleAnswersList, null));
+end
+
+rule "asking for a raise NO"
+	when 
+		Question(getText() == "Are you asking for a raise?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Just a promotion?", possibleAnswersList, null));
+end
+
+rule "asking for a raise YES or promotion YES"
+	when 
+		Question(
+			(getText() == "Are you asking for a raise?" && getAnswer() == "Yes") ||
+			(getText() == "Just a promotion?" && getAnswer() == "Yes")
+		)
+	then
+		showDrink("STOP! Do this in the office");
+end
+
+rule "promotion NO"
+	when 
+		Question(getText() == "Just a promotion?", getAnswer() == "No")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Are you trying to seduce your boss?", possibleAnswersList, null));
+end
+
+rule "trying seduce boss YES"
+	when 
+		Question(getText() == "Are you trying to seduce your boss?", getAnswer() == "Yes")
+	then
+		ArrayList<String> possibleAnswersList = new ArrayList<>();
+		possibleAnswersList.add("Yes");
+		possibleAnswersList.add("No");
+		insert(new Question("Are you sure this is a good idea?", possibleAnswersList, null));
+end
+
+function void printQuestion(Question question){
+        question.setAnswer(Gui.printQuestion(question.getText(), question.getPossibleAnswers()));
+}
+
+function void showDrink(String finalChoice){
+        Gui.showDrink(finalChoice);
+}
